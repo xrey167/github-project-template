@@ -15,7 +15,7 @@ jobs:
         with:
           script: |
             const { context, github } = require('@actions/github');
-            
+
             // Auto-assignment rules based on labels
             const assignmentRules = {
               'bug': ['@maintainer1', '@qa-lead'],
@@ -25,12 +25,12 @@ jobs:
               'documentation': ['@docs-team'],
               'sprint-planning': ['@product-owner', '@scrum-master']
             };
-            
+
             const item = context.payload.issue || context.payload.pull_request;
             const labels = item.labels.map(label => label.name);
-            
+
             let assignees = new Set();
-            
+
             // Check each label and add corresponding assignees
             labels.forEach(label => {
               if (assignmentRules[label]) {
@@ -39,7 +39,7 @@ jobs:
                 });
               }
             });
-            
+
             // Assign if we found any matching assignees
             if (assignees.size > 0) {
               const params = {

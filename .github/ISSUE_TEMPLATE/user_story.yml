@@ -9,7 +9,7 @@ body:
       value: |
         ## User Story Template
         Nutzen Sie dieses Template für strukturierte User Stories in der Sprint-Planung.
-  
+
   - type: input
     id: epic
     attributes:
@@ -18,7 +18,7 @@ body:
       placeholder: "z.B. Benutzeranmeldung, Dashboard, etc."
     validations:
       required: true
-  
+
   - type: textarea
     id: user_story
     attributes:
@@ -28,14 +28,14 @@ body:
         Als [Rolle]
         möchte ich [Ziel]
         damit [Nutzen]
-        
+
         Beispiel:
         Als eingeloggter Benutzer
         möchte ich mein Passwort ändern können
         damit ich meine Kontosicherheit verwalten kann
     validations:
       required: true
-  
+
   - type: textarea
     id: acceptance_criteria
     attributes:
@@ -45,7 +45,7 @@ body:
         - [ ] Kriterium 1
         - [ ] Kriterium 2
         - [ ] Kriterium 3
-        
+
         Beispiel:
         - [ ] Benutzer kann auf "Passwort ändern" Button klicken
         - [ ] Formular wird mit aktueller Email-Adresse vorausgefüllt
@@ -53,7 +53,7 @@ body:
         - [ ] Erfolgreiche Änderung zeigt Bestätigungsmeldung
     validations:
       required: true
-  
+
   - type: dropdown
     id: story_points
     attributes:
@@ -70,7 +70,7 @@ body:
         - "TBD - Needs Breakdown"
     validations:
       required: true
-  
+
   - type: dropdown
     id: priority
     attributes:
@@ -83,14 +83,14 @@ body:
         - "Won't Have (this sprint)"
     validations:
       required: true
-  
+
   - type: input
     id: dependencies
     attributes:
       label: Abhängigkeiten
       description: Andere Stories/Issues, die zuerst abgeschlossen sein müssen
       placeholder: "#123, #456"
-  
+
   - type: textarea
     id: definition_of_done
     attributes:
@@ -101,7 +101,7 @@ body:
         - [ ] Tests geschrieben und bestanden
         - [ ] Dokumentation aktualisiert
         - [ ] UI/UX Review abgeschlossen
-  
+
   - type: textarea
     id: notes
     attributes:

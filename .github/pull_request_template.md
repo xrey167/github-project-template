@@ -21,6 +21,7 @@ Related to #issue-nummer
 ## ✅ Checklist
 
 ### Entwicklung
+
 - [ ] Code folgt den Projekt-Style-Guidelines
 - [ ] Self-review des eigenen Codes durchgeführt
 - [ ] Code ist gut kommentiert, besonders bei komplexer Logik
@@ -28,11 +29,13 @@ Related to #issue-nummer
 - [ ] Keine neuen Warnings durch die Änderungen
 
 ### Testing
+
 - [ ] Tests hinzugefügt die beweisen, dass der Fix funktioniert oder das Feature implementiert ist
 - [ ] Neue und bestehende Unit Tests laufen lokal mit den Änderungen
 - [ ] Abhängige Änderungen wurden zusammengeführt und veröffentlicht
 
 ### Deployment
+
 - [ ] Änderungen wurden lokal getestet
 - [ ] Änderungen funktionieren in Staging-Umgebung
 - [ ] Migration/Setup-Scripts funktionieren korrekt (falls zutreffend)
@@ -42,14 +45,15 @@ Related to #issue-nummer
 _Beschreiben Sie die Tests, die Sie durchgeführt haben, um Ihre Änderungen zu verifizieren._
 
 ### Test-Konfiguration
+
 - Browser/OS:
 - Node Version:
 - Test-Framework Version:
 
 ## 📸 Screenshots (falls UI-Änderungen)
 
-| Vorher | Nachher |
-|--------|---------|
+| Vorher      | Nachher     |
+| ----------- | ----------- |
 | ![alt](url) | ![alt](url) |
 
 ## 📝 Zusätzliche Notizen
@@ -63,6 +67,7 @@ _Fügen Sie hier weitere Notizen, Überlegungen oder Diskussionspunkte hinzu._
 ---
 
 **Definition of Done:**
+
 - [ ] Code Review abgeschlossen und genehmigt
 - [ ] Alle Tests bestanden (Unit, Integration, E2E)
 - [ ] Dokumentation aktualisiert

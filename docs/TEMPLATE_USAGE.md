@@ -22,22 +22,22 @@ Dieses Dokument erklärt, wie du das Repository als Ausgangspunkt für neue Proj
 
 ## 🧩 Was ist enthalten?
 
-| Bereich | Inhalte |
-| --- | --- |
-| Planung | Issue- & PR-Vorlagen, Sprint-Board-Konfiguration |
-| Automatisierung | CI/CD Pipeline, Auto-Assign Workflow, AI Code Review |
-| Qualität | ESLint, Prettier, Vitest, Playwright, Husky/Lint-Staged |
-| Docs | README, CONTRIBUTING, CODE_OF_CONDUCT, LICENSE |
+| Bereich         | Inhalte                                                 |
+| --------------- | ------------------------------------------------------- |
+| Planung         | Issue- & PR-Vorlagen, Sprint-Board-Konfiguration        |
+| Automatisierung | CI/CD Pipeline, Auto-Assign Workflow, AI Code Review    |
+| Qualität        | ESLint, Prettier, Vitest, Playwright, Husky/Lint-Staged |
+| Docs            | README, CONTRIBUTING, CODE_OF_CONDUCT, LICENSE          |
 
 ## 🔧 Pflichtanpassungen nach dem Klonen
 
-| Schritt | Beschreibung |
-| --- | --- |
-| `.env.example` prüfen | Relevante Environment-Variablen ergänzen und in `.env` kopieren |
-| `package.json` | `name`, `description`, `author`, `repository`-Links anpassen |
-| Workflows | Secrets (`FACTORY_API_KEY`, `ANTHROPIC_API_KEY`, `PROJECT_TOKEN`) im Repository hinterlegen |
-| Auto-Assign | In `.github/workflows/auto-assign.yml` Nutzer:innen & Projekt-URL anpassen |
-| LICENSE | Falls nicht MIT verwendet werden soll, ersetzen |
+| Schritt               | Beschreibung                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `.env.example` prüfen | Relevante Environment-Variablen ergänzen und in `.env` kopieren                             |
+| `package.json`        | `name`, `description`, `author`, `repository`-Links anpassen                                |
+| Workflows             | Secrets (`FACTORY_API_KEY`, `ANTHROPIC_API_KEY`, `PROJECT_TOKEN`) im Repository hinterlegen |
+| Auto-Assign           | In `.github/workflows/auto-assign.yml` Nutzer:innen & Projekt-URL anpassen                  |
+| LICENSE               | Falls nicht MIT verwendet werden soll, ersetzen                                             |
 
 ## 🛠️ Development-Workflow
 
@@ -61,9 +61,9 @@ Dieses Dokument erklärt, wie du das Repository als Ausgangspunkt für neue Proj
 
 ## 🤖 AI Code Review konfigurieren
 
-| Workflow | Zweck | Notwendige Secrets |
-| --- | --- | --- |
-| `droid-code-review` | Nutzung von `Factory-AI/droid-code-review@v1` | `FACTORY_API_KEY`, `GITHUB_TOKEN` |
+| Workflow             | Zweck                                          | Notwendige Secrets                  |
+| -------------------- | ---------------------------------------------- | ----------------------------------- |
+| `droid-code-review`  | Nutzung von `Factory-AI/droid-code-review@v1`  | `FACTORY_API_KEY`, `GITHUB_TOKEN`   |
 | `claude-code-action` | Nutzung von `anthropics/claude-code-action@v1` | `ANTHROPIC_API_KEY`, `GITHUB_TOKEN` |
 
 Passe `include-patterns`/`include-paths` an deine Codebasis an, um Rauschen zu reduzieren.

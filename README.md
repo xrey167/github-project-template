@@ -46,11 +46,11 @@ Details zur Nutzung findest du in `docs/TEMPLATE_USAGE.md`.
 
 ## 🔐 Benötigte Secrets
 
-| Secret | Beschreibung |
-| --- | --- |
-| `FACTORY_API_KEY` | API Key für `Factory-AI/droid-code-review@v1` |
-| `ANTHROPIC_API_KEY` | API Key für `anthropics/claude-code-action@v1` |
-| `PROJECT_TOKEN` | Personal Access Token mit Zugriffsrechten auf GitHub Projects |
+| Secret              | Beschreibung                                                  |
+| ------------------- | ------------------------------------------------------------- |
+| `FACTORY_API_KEY`   | API Key für `Factory-AI/droid-code-review@v1`                 |
+| `ANTHROPIC_API_KEY` | API Key für `anthropics/claude-code-action@v1`                |
+| `PROJECT_TOKEN`     | Personal Access Token mit Zugriffsrechten auf GitHub Projects |
 
 Weitere Anforderungen siehe `ci.yml` und `auto-assign.yml`.
 

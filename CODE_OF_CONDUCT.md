@@ -106,4 +106,4 @@ Für Fragen zu diesem Code of Conduct kontaktieren Sie:
 
 **Letzte Aktualisierung**: November 2024
 
-*Wir sind bestrebt, eine einladende und sichere Umgebung für alle zu schaffen. Vielen Dank, dass Sie dazu beitragen!* 🙏
+_Wir sind bestrebt, eine einladende und sichere Umgebung für alle zu schaffen. Vielen Dank, dass Sie dazu beitragen!_ 🙏

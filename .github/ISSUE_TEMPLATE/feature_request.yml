@@ -9,7 +9,7 @@ body:
       value: |
         ## Feature Request
         Vielen Dank für Ihren Vorschlag! Bitte beschreiben Sie Ihre Idee so detailliert wie möglich.
-  
+
   - type: checkboxes
     id: preflight
     attributes:
@@ -22,7 +22,7 @@ body:
           required: true
         - label: Ich habe überprüft, dass das Feature noch nicht existiert
           required: true
-  
+
   - type: textarea
     id: problem
     attributes:
@@ -31,7 +31,7 @@ body:
       placeholder: "Ich bin frustriert, wenn ich..."
     validations:
       required: true
-  
+
   - type: textarea
     id: solution
     attributes:
@@ -40,14 +40,14 @@ body:
       placeholder: "Eine klare und prägnante Beschreibung dessen, was Sie möchten..."
     validations:
       required: true
-  
+
   - type: textarea
     id: alternatives
     attributes:
       label: Alternative Lösungen
       description: Haben Sie über alternative Lösungen oder Features nachgedacht?
       placeholder: "Eine klare und prägnante Beschreibung aller alternativen Lösungen oder Features, die Sie in Betracht gezogen haben."
-  
+
   - type: dropdown
     id: priority
     attributes:
@@ -60,7 +60,7 @@ body:
         - Kritisch - Blocker für die Nutzung
     validations:
       required: true
-  
+
   - type: dropdown
     id: complexity
     attributes:
@@ -71,7 +71,7 @@ body:
         - Mittel - Neue Komponente/Funktion
         - Komplex - Große Architekturänderung
         - Unsicher - Benötigt weitere Analyse
-  
+
   - type: textarea
     id: additional
     attributes:

@@ -58,15 +58,15 @@ jobs:
             5. TypeScript/JavaScript specific issues
             6. React/Vue/Angular specific patterns (if applicable)
             7. Test coverage suggestions
-            
+
             Please provide constructive feedback with specific suggestions for improvement.
-          
+
           # Optional: Specify which files to review
           include-paths: |
             src/
             lib/
             components/
-          
+
           exclude-paths: |
             node_modules/
             dist/
@@ -99,6 +99,6 @@ jobs:
             8. Environment variable leaks
             9. Dependency vulnerabilities
             10. CORS misconfigurations
-            
+
             Rate severity as: CRITICAL, HIGH, MEDIUM, LOW
             Provide specific remediation steps for each issue found.
