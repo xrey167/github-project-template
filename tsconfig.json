@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
@@ -21,12 +21,7 @@
   },
   "include": [
     "src",
-    "tests",
-    "scripts",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "vitest.integration.config.ts",
-    "playwright.config.ts"
+    "tests"
   ],
   "exclude": ["dist", "node_modules"]
 }
