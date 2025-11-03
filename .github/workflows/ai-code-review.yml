@@ -1,8 +1,12 @@
-﻿name: 🤖 AI Code Review
+name: 🤖 AI Code Review
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-code-review.yml"
 
 jobs:
   noop:
@@ -84,12 +88,18 @@ jobs:
   security-review:
     name: 🔒 Security Review
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && secrets.ANTHROPIC_API_KEY != '' && (contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication')) }}
+    if: ${{ github.event_name == 'pull_request' && secrets.ANTHROPIC_API_KEY != '' }}
     steps:
+      - name: Skip when no security labels
+        if: ${{ !(contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication')) }}
+        run: echo "No security label found; skipping enhanced review."
+
       - name: ⬇️ Checkout code
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication') }}
         uses: actions/checkout@v4
 
       - name: 🔒 Enhanced Security Review with Claude
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication') }}
         uses: anthropics/claude-code-action@v1
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

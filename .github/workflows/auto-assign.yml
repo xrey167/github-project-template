@@ -1,10 +1,14 @@
-﻿name: 🤖 Auto-Assign Issues & PRs
+name: 🤖 Auto-Assign Issues & PRs
 
 on:
   issues:
     types: [opened]
   pull_request:
     types: [opened]
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/auto-assign.yml"
 
 jobs:
   noop:
