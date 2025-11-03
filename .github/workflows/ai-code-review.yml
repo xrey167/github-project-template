@@ -5,6 +5,13 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  noop:
+    name: 💤 No-op
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - run: echo "AI review workflows run only on pull requests."
+
   droid-code-review:
     name: 🚀 Droid Code Review
     runs-on: ubuntu-latest
