@@ -8,7 +8,7 @@ jobs:
   droid-code-review:
     name: 🚀 Droid Code Review
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
+    if: ${{ github.actor != 'dependabot[bot]' && secrets.FACTORY_API_KEY != '' }}
     steps:
       - name: 🔍 Droid Code Review
         uses: Factory-AI/droid-code-review@v1
@@ -36,7 +36,7 @@ jobs:
   claude-code-action:
     name: 🧠 Claude Code Assistant
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
+    if: ${{ github.actor != 'dependabot[bot]' && secrets.ANTHROPIC_API_KEY != '' }}
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
   security-review:
     name: 🔒 Security Review
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication')
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication')) && secrets.ANTHROPIC_API_KEY != '' }}
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
