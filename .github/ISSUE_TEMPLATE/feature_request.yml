@@ -1,0 +1,79 @@
+﻿name: ✨ Feature Request
+description: Schlagen Sie ein neues Feature oder eine Verbesserung vor
+title: "[Feature]: "
+labels: ["enhancement", "needs-discussion"]
+projects: ["octo-org/1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        Vielen Dank für Ihren Vorschlag! Bitte beschreiben Sie Ihre Idee so detailliert wie möglich.
+  
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Vorbereitung
+      description: Bitte bestätigen Sie folgende Punkte vor dem Einreichen
+      options:
+        - label: Ich habe die Dokumentation gelesen
+          required: true
+        - label: Ich habe nach ähnlichen Feature Requests gesucht
+          required: true
+        - label: Ich habe überprüft, dass das Feature noch nicht existiert
+          required: true
+  
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem-Beschreibung
+      description: Welches Problem löst dieses Feature? Beginnen Sie mit "Ich bin frustriert, wenn..."
+      placeholder: "Ich bin frustriert, wenn ich..."
+    validations:
+      required: true
+  
+  - type: textarea
+    id: solution
+    attributes:
+      label: Vorgeschlagene Lösung
+      description: Was würden Sie gerne passieren lassen?
+      placeholder: "Eine klare und prägnante Beschreibung dessen, was Sie möchten..."
+    validations:
+      required: true
+  
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Lösungen
+      description: Haben Sie über alternative Lösungen oder Features nachgedacht?
+      placeholder: "Eine klare und prägnante Beschreibung aller alternativen Lösungen oder Features, die Sie in Betracht gezogen haben."
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorität
+      description: Wie wichtig ist dieses Feature für Sie?
+      options:
+        - Niedrig - Wäre schön zu haben
+        - Mittel - Würde meine Produktivität verbessern
+        - Hoch - Kritisch für meinen Workflow
+        - Kritisch - Blocker für die Nutzung
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Geschätzte Komplexität
+      description: Wie komplex schätzen Sie die Implementierung ein?
+      options:
+        - Einfach - Kleine Änderung
+        - Mittel - Neue Komponente/Funktion
+        - Komplex - Große Architekturänderung
+        - Unsicher - Benötigt weitere Analyse
+  
+  - type: textarea
+    id: additional
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Fügen Sie Screenshots, Mockups oder zusätzliche Informationen hinzu.

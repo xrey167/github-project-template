@@ -1,0 +1,72 @@
+﻿name: 🤖 Auto-Assign Issues & PRs
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 👥 Auto-assign based on labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            
+            // Auto-assignment rules based on labels
+            const assignmentRules = {
+              'bug': ['@maintainer1', '@qa-lead'],
+              'security': ['@security-team', '@maintainer1'],
+              'frontend': ['@frontend-team'],
+              'backend': ['@backend-team'],
+              'documentation': ['@docs-team'],
+              'sprint-planning': ['@product-owner', '@scrum-master']
+            };
+            
+            const item = context.payload.issue || context.payload.pull_request;
+            const labels = item.labels.map(label => label.name);
+            
+            let assignees = new Set();
+            
+            // Check each label and add corresponding assignees
+            labels.forEach(label => {
+              if (assignmentRules[label]) {
+                assignmentRules[label].forEach(assignee => {
+                  assignees.add(assignee.replace('@', ''));
+                });
+              }
+            });
+            
+            // Assign if we found any matching assignees
+            if (assignees.size > 0) {
+              const params = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: item.number,
+                assignees: Array.from(assignees)
+              };
+              
+              if (context.payload.issue) {
+                await github.rest.issues.addAssignees(params);
+              } else {
+                await github.rest.pulls.requestReviewers({
+                  ...params,
+                  pull_number: item.number,
+                  reviewers: Array.from(assignees)
+                });
+              }
+            }
+
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📋 Add to Project Board
+        uses: actions/add-to-project@v0.4.0
+        with:
+          project-url: https://github.com/orgs/OWNER/projects/PROJECT_NUMBER
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          labeled: sprint-planning,bug,enhancement
+          label-operator: OR

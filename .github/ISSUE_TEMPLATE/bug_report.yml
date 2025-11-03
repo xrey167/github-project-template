@@ -1,0 +1,66 @@
+﻿name: 🐛 Bug Report
+description: Melde einen Fehler oder ein Problem
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+projects: ["octo-org/1", "octo-org/44"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vielen Dank, dass Sie einen Bug-Report erstellen! Bitte füllen Sie die folgenden Informationen so detailliert wie möglich aus.
+  - type: input
+    id: contact
+    attributes:
+      label: Kontakt-Details
+      description: Wie können wir Sie kontaktieren, falls wir Rückfragen haben?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Was ist passiert?
+      description: Beschreiben Sie das Problem so detailliert wie möglich.
+      placeholder: Beschreiben Sie hier den Fehler...
+      value: "Ein Bug ist aufgetreten!"
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: Welche Version verwenden Sie?
+      options:
+        - 1.0.2 (Default)
+        - 1.0.3 (Edge)
+        - Development
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: In welchen Browsern tritt das Problem auf?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevante Log-Ausgaben
+      description: Bitte kopieren Sie alle relevanten Log-Ausgaben. Diese werden automatisch als Code formatiert.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: Durch das Absenden dieses Issues bestätigen Sie folgende Punkte
+      options:
+        - label: Ich habe die [Code of Conduct](https://example.com) gelesen und stimme diesen zu
+          required: true
+        - label: Ich habe überprüft, dass es noch kein ähnliches Issue gibt
+          required: true

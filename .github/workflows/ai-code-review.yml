@@ -1,0 +1,104 @@
+﻿name: 🤖 AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  droid-code-review:
+    name: 🚀 Droid Code Review
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: 🔍 Droid Code Review
+        uses: Factory-AI/droid-code-review@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          factory-api-key: ${{ secrets.FACTORY_API_KEY }}
+          # Optional: Specify file patterns to review
+          include-patterns: |
+            **/*.ts
+            **/*.tsx
+            **/*.js
+            **/*.jsx
+            **/*.py
+            **/*.java
+            **/*.go
+            **/*.rs
+          # Optional: Exclude certain patterns
+          exclude-patterns: |
+            **/node_modules/**
+            **/dist/**
+            **/build/**
+            **/*.test.ts
+            **/*.spec.ts
+
+  claude-code-action:
+    name: 🧠 Claude Code Assistant
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🤖 Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Customize Claude's behavior
+          task: |
+            Perform a thorough code review focusing on:
+            1. Code quality and best practices
+            2. Potential bugs and logic errors
+            3. Security vulnerabilities
+            4. Performance optimizations
+            5. TypeScript/JavaScript specific issues
+            6. React/Vue/Angular specific patterns (if applicable)
+            7. Test coverage suggestions
+            
+            Please provide constructive feedback with specific suggestions for improvement.
+          
+          # Optional: Specify which files to review
+          include-paths: |
+            src/
+            lib/
+            components/
+          
+          exclude-paths: |
+            node_modules/
+            dist/
+            build/
+            *.test.ts
+            *.spec.ts
+
+  security-review:
+    name: 🔒 Security Review
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'security') || contains(github.event.pull_request.labels.*.name, 'authentication')
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔒 Enhanced Security Review with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            Perform a security-focused code review. Look for:
+            1. SQL injection vulnerabilities
+            2. XSS attack vectors
+            3. Authentication/authorization flaws
+            4. Input validation issues
+            5. Sensitive data exposure
+            6. Insecure cryptographic practices
+            7. API security issues
+            8. Environment variable leaks
+            9. Dependency vulnerabilities
+            10. CORS misconfigurations
+            
+            Rate severity as: CRITICAL, HIGH, MEDIUM, LOW
+            Provide specific remediation steps for each issue found.

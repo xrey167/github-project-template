@@ -1,0 +1,110 @@
+﻿name: 📖 User Story
+description: Erstelle eine User Story für Sprint-Planung
+title: "[Story]: Als [Rolle] möchte ich [Ziel], damit [Nutzen]"
+labels: ["user-story", "sprint-planning"]
+projects: ["octo-org/1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## User Story Template
+        Nutzen Sie dieses Template für strukturierte User Stories in der Sprint-Planung.
+  
+  - type: input
+    id: epic
+    attributes:
+      label: Epic/Feature
+      description: Zu welchem Epic oder Feature gehört diese Story?
+      placeholder: "z.B. Benutzeranmeldung, Dashboard, etc."
+    validations:
+      required: true
+  
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: Beschreiben Sie die User Story im Format "Als [Rolle] möchte ich [Ziel], damit [Nutzen]"
+      placeholder: |
+        Als [Rolle]
+        möchte ich [Ziel]
+        damit [Nutzen]
+        
+        Beispiel:
+        Als eingeloggter Benutzer
+        möchte ich mein Passwort ändern können
+        damit ich meine Kontosicherheit verwalten kann
+    validations:
+      required: true
+  
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Akzeptanzkriterien
+      description: Listen Sie die Akzeptanzkriterien als checkbare Punkte auf
+      placeholder: |
+        - [ ] Kriterium 1
+        - [ ] Kriterium 2
+        - [ ] Kriterium 3
+        
+        Beispiel:
+        - [ ] Benutzer kann auf "Passwort ändern" Button klicken
+        - [ ] Formular wird mit aktueller Email-Adresse vorausgefüllt
+        - [ ] Neues Passwort muss bestätigt werden
+        - [ ] Erfolgreiche Änderung zeigt Bestätigungsmeldung
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: story_points
+    attributes:
+      label: Story Points
+      description: Schätzung des Aufwands (Fibonacci-Folge)
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "5"
+        - "8"
+        - "13"
+        - "21"
+        - "TBD - Needs Breakdown"
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorität
+      description: Business-Priorität der Story
+      options:
+        - "Must Have"
+        - "Should Have"
+        - "Could Have"
+        - "Won't Have (this sprint)"
+    validations:
+      required: true
+  
+  - type: input
+    id: dependencies
+    attributes:
+      label: Abhängigkeiten
+      description: Andere Stories/Issues, die zuerst abgeschlossen sein müssen
+      placeholder: "#123, #456"
+  
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of Done
+      description: Zusätzliche Kriterien für "Done" (falls nicht im globalen DoD enthalten)
+      placeholder: |
+        - [ ] Code Review abgeschlossen
+        - [ ] Tests geschrieben und bestanden
+        - [ ] Dokumentation aktualisiert
+        - [ ] UI/UX Review abgeschlossen
+  
+  - type: textarea
+    id: notes
+    attributes:
+      label: Technische Notizen
+      description: Implementierungsdetails, Architektur-Überlegungen, etc.
+      placeholder: "Technische Details, Design-Entscheidungen, API-Endpunkte, etc."

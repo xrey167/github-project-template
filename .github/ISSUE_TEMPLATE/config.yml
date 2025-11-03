@@ -1,0 +1,11 @@
+﻿blank_issues_enabled: false
+contact_links:
+  - name: 💬 Diskussion & Support
+    url: https://github.com/xrey167/github-project-template/discussions
+    about: Stelle Fragen und diskutiere mit der Community
+  - name: 📚 Dokumentation
+    url: https://xrey167.github.io/github-project-template
+    about: Vollständige Projekt-Dokumentation
+  - name: 🔒 Sicherheits-Schwachstelle melden
+    url: https://github.com/xrey167/github-project-template/security/advisories/new
+    about: Bitte nutze den privaten Sicherheits-Report für Sicherheitsprobleme
