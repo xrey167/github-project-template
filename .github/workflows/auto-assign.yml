@@ -9,11 +9,13 @@ on:
 jobs:
   auto-assign:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'issues' || github.event_name == 'pull_request' }}
     steps:
       - name: 👥 Auto-assign based on labels
         uses: actions/github-script@v6
         with:
           script: |
+            const core = require('@actions/core');
             const { context, github } = require('@actions/github');
 
             // Auto-assignment rules based on labels
@@ -27,6 +29,10 @@ jobs:
             };
 
             const item = context.payload.issue || context.payload.pull_request;
+            if (!item) {
+              core.info('No issue or pull request payload detected; skipping auto-assign.');
+              return;
+            }
             const labels = item.labels.map(label => label.name);
 
             let assignees = new Set();
@@ -62,7 +68,7 @@ jobs:
 
   add-to-project:
     runs-on: ubuntu-latest
-    if: ${{ secrets.PROJECT_TOKEN != '' }}
+    if: ${{ (github.event_name == 'issues' || github.event_name == 'pull_request') && secrets.PROJECT_TOKEN != '' }}
     steps:
       - name: 📋 Add to Project Board
         uses: actions/add-to-project@v0.4.0
