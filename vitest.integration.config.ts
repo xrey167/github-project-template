@@ -8,5 +8,5 @@ export default mergeConfig(
       include: ["tests/integration/**/*.test.{ts,tsx}"],
       environment: "jsdom",
     },
-  }),
+  })
 );
