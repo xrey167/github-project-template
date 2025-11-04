@@ -3,6 +3,12 @@ name: 🏭 Factory AI User Story Workflow
 on:
   issues:
     types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process (for manual re-trigger)'
+        required: true
+        type: number
   push:
     branches: [main]
     paths:
@@ -45,6 +51,7 @@ jobs:
   plan-implementation:
     name: 📋 Plan Implementation with Factory AI
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: validate-user-story
     if: ${{ needs.validate-user-story.outputs.is_valid == 'true' }}
     outputs:
@@ -118,10 +125,11 @@ jobs:
 
             Commitme den Plan mit der Message: "plan: add implementation plan for user story #${{ github.event.issue.number }}"
 
-      - name: 📤 Push planning branch
+      - name: 📤 Push planning branch with retry
         if: ${{ steps.plan.outputs.plan_created == 'true' || success() }}
         run: |
-          git push -u origin ${{ steps.create_branch.outputs.branch_name }} || echo "Branch push will be done after implementation"
+          chmod +x .github/scripts/git-push-with-retry.sh
+          .github/scripts/git-push-with-retry.sh "${{ steps.create_branch.outputs.branch_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -137,9 +145,33 @@ jobs:
               body: `🏭 **Factory AI Workflow gestartet**\n\n✅ Planungsphase abgeschlossen\n🌿 Branch erstellt: \`${{ steps.create_branch.outputs.branch_name }}\`\n\n➡️ Als nächstes: Implementierung`
             });
 
+      - name: 💬 Comment on Issue - Plan Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Planungsphase**\n\n` +
+                    `Der Workflow ist in der Planungsphase fehlgeschlagen.\n\n` +
+                    `**Fehlerdetails:**\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `**Mögliche Ursachen:**\n` +
+                    `- ANTHROPIC_API_KEY fehlt oder ist ungültig\n` +
+                    `- API Rate Limit erreicht\n` +
+                    `- Netzwerkfehler\n\n` +
+                    `**Nächste Schritte:**\n` +
+                    `1. Überprüfe die Logs im Workflow-Run\n` +
+                    `2. Stelle sicher, dass ANTHROPIC_API_KEY korrekt gesetzt ist\n` +
+                    `3. Warte einige Minuten und versuche es erneut`
+            });
+
   implement-story:
     name: 🔨 Implement User Story with Factory AI
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [validate-user-story, plan-implementation]
     if: ${{ needs.plan-implementation.outputs.branch_name != '' }}
     steps:
@@ -154,6 +186,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: 📦 Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-impl-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-impl-
+            ${{ runner.os }}-node-
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -193,9 +234,30 @@ jobs:
               body: `✅ Implementierungsphase abgeschlossen\n\n➡️ Als nächstes: Tests schreiben`
             });
 
+      - name: 💬 Comment on Issue - Implementation Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Implementierungsphase**\n\n` +
+                    `Der Workflow ist während der Implementierung fehlgeschlagen.\n\n` +
+                    `**Fehlerdetails:**\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `**Mögliche Ursachen:**\n` +
+                    `- Syntaxfehler im generierten Code\n` +
+                    `- Fehlende Dependencies\n` +
+                    `- API Timeout\n\n` +
+                    `Bitte überprüfe die Logs für Details.`
+            });
+
   write-tests:
     name: 🧪 Write Tests with Factory AI
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: [validate-user-story, plan-implementation, implement-story]
     steps:
       - name: ⬇️ Checkout code on feature branch
@@ -209,6 +271,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: 📦 Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-tests-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-tests-
+            ${{ runner.os }}-node-
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -257,9 +328,30 @@ jobs:
               body: `✅ Tests geschrieben und ausgeführt\n\n➡️ Als nächstes: Akzeptanzkriterien prüfen`
             });
 
+      - name: 💬 Comment on Issue - Tests Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Test-Phase**\n\n` +
+                    `Der Workflow ist während des Test-Schreibens fehlgeschlagen.\n\n` +
+                    `**Fehlerdetails:**\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `**Mögliche Ursachen:**\n` +
+                    `- Tests schlagen fehl\n` +
+                    `- Fehlende Test-Dependencies\n` +
+                    `- Fehler im Test-Code\n\n` +
+                    `Bitte überprüfe die Logs für Details.`
+            });
+
   verify-acceptance-criteria:
     name: ✅ Verify Acceptance Criteria
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: [validate-user-story, plan-implementation, implement-story, write-tests]
     steps:
       - name: ⬇️ Checkout code on feature branch
@@ -273,6 +365,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: 📦 Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-verify-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-verify-
+            ${{ runner.os }}-node-
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -331,9 +432,10 @@ jobs:
           npm run test:integration
           npm run build
 
-      - name: 📤 Push all changes
+      - name: 📤 Push all changes with retry
         run: |
-          git push -u origin ${{ needs.plan-implementation.outputs.branch_name }}
+          chmod +x .github/scripts/git-push-with-retry.sh
+          .github/scripts/git-push-with-retry.sh "${{ needs.plan-implementation.outputs.branch_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -349,9 +451,30 @@ jobs:
               body: `✅ Akzeptanzkriterien geprüft\n\n➡️ Als nächstes: Pull Request erstellen`
             });
 
+      - name: 💬 Comment on Issue - Verification Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Akzeptanzkriterien-Prüfung**\n\n` +
+                    `Der Workflow ist während der Akzeptanzprüfung fehlgeschlagen.\n\n` +
+                    `**Fehlerdetails:**\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `**Mögliche Ursachen:**\n` +
+                    `- Tests schlagen fehl (lint, unit, integration, build)\n` +
+                    `- Akzeptanzkriterien nicht erfüllt\n` +
+                    `- Git Push Fehler\n\n` +
+                    `Bitte überprüfe die Logs für Details.`
+            });
+
   create-pull-request:
     name: 🔀 Create Pull Request
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [validate-user-story, plan-implementation, verify-acceptance-criteria]
     steps:
       - name: ⬇️ Checkout code
@@ -447,9 +570,67 @@ jobs:
   notify-completion:
     name: 📢 Notify Completion
     runs-on: ubuntu-latest
-    needs: [validate-user-story, create-pull-request]
+    timeout-minutes: 5
+    needs: [validate-user-story, plan-implementation, implement-story, write-tests, verify-acceptance-criteria, create-pull-request]
     if: always()
     steps:
+      - name: 📊 Generate Workflow Summary
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const validationStatus = '${{ needs.validate-user-story.result }}';
+            const planStatus = '${{ needs.plan-implementation.result }}';
+            const implementStatus = '${{ needs.implement-story.result }}';
+            const testStatus = '${{ needs.write-tests.result }}';
+            const verifyStatus = '${{ needs.verify-acceptance-criteria.result }}';
+            const prStatus = '${{ needs.create-pull-request.result }}';
+
+            const getEmoji = (status) => {
+              if (status === 'success') return '✅';
+              if (status === 'failure') return '❌';
+              if (status === 'skipped') return '⏭️';
+              return '⚠️';
+            };
+
+            const summary = `
+            ## 🏭 Factory AI Workflow Summary
+
+            **User Story:** #${{ github.event.issue.number }}
+            **Branch:** \`${{ needs.plan-implementation.outputs.branch_name || 'N/A' }}\`
+
+            ### 📊 Phase Results
+
+            | Phase | Status | Result |
+            |-------|--------|--------|
+            | ✅ Validation | ${getEmoji(validationStatus)} | ${validationStatus} |
+            | 📋 Planning | ${getEmoji(planStatus)} | ${planStatus} |
+            | 🔨 Implementation | ${getEmoji(implementStatus)} | ${implementStatus} |
+            | 🧪 Tests | ${getEmoji(testStatus)} | ${testStatus} |
+            | ✅ Acceptance | ${getEmoji(verifyStatus)} | ${verifyStatus} |
+            | 🔀 Pull Request | ${getEmoji(prStatus)} | ${prStatus} |
+
+            **Overall Status:** ${prStatus === 'success' ? '✅ SUCCESS' : '❌ FAILED'}
+
+            **Workflow Run:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})
+
+            ---
+            🤖 Generated by Factory AI User Story Workflow
+            `;
+
+            core.summary.addRaw(summary).write();
+
+            // Post summary as comment
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summary
+              });
+            } catch (error) {
+              console.log('Could not post summary comment:', error.message);
+            }
+
       - name: 📢 Summary
         run: |
           echo "🏭 Factory AI User Story Workflow abgeschlossen"
