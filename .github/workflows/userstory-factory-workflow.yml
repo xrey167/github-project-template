@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to process (for manual re-trigger)'
+        description: "Issue number to process (for manual re-trigger)"
         required: true
         type: number
   push:
@@ -16,12 +16,6 @@ on:
 
 env:
   NODE_VERSION: "18"
-
-# Permissions needed for the workflow
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
 
 jobs:
   noop:
@@ -62,32 +56,28 @@ jobs:
     if: ${{ needs.validate-user-story.outputs.is_valid == 'true' }}
     outputs:
       branch_name: ${{ steps.create_branch.outputs.branch_name }}
-      plan_created: ${{ steps.plan.outcome }}
+      plan_created: ${{ steps.plan.outputs.plan_created }}
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🌿 Create feature branch
         id: create_branch
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
         run: |
-          BRANCH_NAME="claude/github-userstory-factory-workflow-${ISSUE_NODE_ID}"
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH_NAME="claude/github-userstory-factory-workflow-${{ github.event.issue.node_id }}"
+          git config --global user.name "factory-ai-bot"
+          git config --global user.email "factory-ai-bot@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: 📋 Create Implementation Plan
         id: plan
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -145,14 +135,13 @@ jobs:
 
       - name: 💬 Comment on Issue - Plan Created
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.issue.number }},
+              issue_number: context.issue.number,
               body: `🏭 **Factory AI Workflow gestartet**\n\n✅ Planungsphase abgeschlossen\n🌿 Branch erstellt: \`${{ steps.create_branch.outputs.branch_name }}\`\n\n➡️ Als nächstes: Implementierung`
             });
 
@@ -191,10 +180,9 @@ jobs:
         with:
           ref: ${{ needs.plan-implementation.outputs.branch_name }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -212,10 +200,8 @@ jobs:
         run: npm ci
 
       - name: 🔨 Implement User Story
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -236,24 +222,15 @@ jobs:
 
             Commitme die Implementierung mit der Message: "feat: implement user story #${{ github.event.issue.number }}"
 
-      - name: 🔨 Skip Implementation (No API Key)
-        if: ${{ env.ANTHROPIC_API_KEY == '' }}
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          echo "⚠️ ANTHROPIC_API_KEY nicht gesetzt - Implementierung übersprungen"
-          echo "Bitte setze das Secret ANTHROPIC_API_KEY in den Repository Settings"
-
       - name: 💬 Comment on Issue - Implementation Done
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.issue.number }},
+              issue_number: context.issue.number,
               body: `✅ Implementierungsphase abgeschlossen\n\n➡️ Als nächstes: Tests schreiben`
             });
 
@@ -282,17 +259,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: [validate-user-story, plan-implementation, implement-story]
-    if: ${{ needs.plan-implementation.outputs.branch_name != '' }}
     steps:
       - name: ⬇️ Checkout code on feature branch
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan-implementation.outputs.branch_name }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -310,10 +285,8 @@ jobs:
         run: npm ci
 
       - name: 🧪 Write Tests
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -340,19 +313,18 @@ jobs:
 
       - name: 🧪 Run All Tests
         run: |
-          npm run test:unit || echo "⚠️ Some unit tests might have failed"
-          npm run test:integration || echo "⚠️ Some integration tests might have failed"
+          npm run test:unit || echo "Some tests might have failed"
+          npm run test:integration || echo "Some integration tests might have failed"
 
       - name: 💬 Comment on Issue - Tests Written
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.issue.number }},
+              issue_number: context.issue.number,
               body: `✅ Tests geschrieben und ausgeführt\n\n➡️ Als nächstes: Akzeptanzkriterien prüfen`
             });
 
@@ -380,18 +352,17 @@ jobs:
     name: ✅ Verify Acceptance Criteria
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: [validate-user-story, plan-implementation, implement-story, write-tests]
-    if: ${{ needs.plan-implementation.outputs.branch_name != '' }}
+    needs:
+      [validate-user-story, plan-implementation, implement-story, write-tests]
     steps:
       - name: ⬇️ Checkout code on feature branch
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan-implementation.outputs.branch_name }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -409,10 +380,8 @@ jobs:
         run: npm ci
 
       - name: ✅ Verify Acceptance Criteria
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -458,12 +427,11 @@ jobs:
             Commitme den Bericht mit der Message: "docs: add acceptance criteria report for user story #${{ github.event.issue.number }}"
 
       - name: 🔍 Run Final Tests
-        continue-on-error: true
         run: |
-          npm run lint || echo "⚠️ Linting failed"
-          npm run test:unit || echo "⚠️ Unit tests failed"
-          npm run test:integration || echo "⚠️ Integration tests failed"
-          npm run build || echo "⚠️ Build failed"
+          npm run lint
+          npm run test:unit
+          npm run test:integration
+          npm run build
 
       - name: 📤 Push all changes with retry
         run: |
@@ -474,14 +442,13 @@ jobs:
 
       - name: 💬 Comment on Issue - Verification Done
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.issue.number }},
+              issue_number: context.issue.number,
               body: `✅ Akzeptanzkriterien geprüft\n\n➡️ Als nächstes: Pull Request erstellen`
             });
 
@@ -509,20 +476,18 @@ jobs:
     name: 🔀 Create Pull Request
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [validate-user-story, plan-implementation, verify-acceptance-criteria]
-    if: ${{ needs.plan-implementation.outputs.branch_name != '' }}
+    needs:
+      [validate-user-story, plan-implementation, verify-acceptance-criteria]
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan-implementation.outputs.branch_name }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔀 Create Pull Request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue = context.payload.issue;
             const branchName = '${{ needs.plan-implementation.outputs.branch_name }}';
@@ -593,7 +558,7 @@ jobs:
 
               return pr;
             } catch (error) {
-              console.error('Failed to create pull request:', error);
+              core.setFailed(`Failed to create pull request: ${error.message}`);
 
               // Comment on issue about the error
               await github.rest.issues.createComment({
@@ -602,15 +567,21 @@ jobs:
                 issue_number: issue.number,
                 body: `❌ **Fehler beim Erstellen des Pull Requests**\n\n\`\`\`\n${error.message}\n\`\`\`\n\nBitte überprüfe die Logs für weitere Details.`
               });
-
-              throw error;
             }
 
   notify-completion:
     name: 📢 Notify Completion
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [validate-user-story, plan-implementation, implement-story, write-tests, verify-acceptance-criteria, create-pull-request]
+    needs:
+      [
+        validate-user-story,
+        plan-implementation,
+        implement-story,
+        write-tests,
+        verify-acceptance-criteria,
+        create-pull-request,
+      ]
     if: always()
     steps:
       - name: 📊 Generate Workflow Summary

@@ -9,12 +9,14 @@ Dieses Dokument beschreibt Verbesserungen und Erweiterungen für den Factory AI 
 **Skript:** `.github/scripts/git-push-with-retry.sh`
 
 **Features:**
+
 - Exponentielles Backoff (2s, 4s, 8s, 16s)
 - Bis zu 4 Retry-Versuche bei Netzwerkfehlern
 - Validierung des Branch-Namens (muss mit `claude/` beginnen)
 - Detaillierte Fehlerausgaben
 
 **Verwendung im Workflow:**
+
 ```yaml
 - name: 📤 Push changes with retry
   run: .github/scripts/git-push-with-retry.sh "${{ needs.plan-implementation.outputs.branch_name }}"
@@ -27,11 +29,13 @@ Dieses Dokument beschreibt Verbesserungen und Erweiterungen für den Factory AI 
 **Skript:** `.github/scripts/git-fetch-with-retry.sh`
 
 **Features:**
+
 - Exponentielles Backoff (2s, 4s, 8s, 16s)
 - Bis zu 4 Retry-Versuche
 - Unterstützt sowohl vollständigen Fetch als auch Branch-spezifischen Fetch
 
 **Verwendung im Workflow:**
+
 ```yaml
 - name: 🔄 Fetch latest changes with retry
   run: .github/scripts/git-fetch-with-retry.sh "${{ needs.plan-implementation.outputs.branch_name }}"
@@ -98,7 +102,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to process'
+        description: "Issue number to process"
         required: true
         type: number
   push:
@@ -168,12 +172,12 @@ jobs:
   plan-implementation:
     name: 📋 Plan Implementation
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Timeout nach 15 Minuten
+    timeout-minutes: 15 # Timeout nach 15 Minuten
 
   implement-story:
     name: 🔨 Implement Story
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Längerer Timeout für Implementierung
+    timeout-minutes: 30 # Längerer Timeout für Implementierung
 ```
 
 ### 10. Summary Report am Ende
@@ -182,7 +186,14 @@ jobs:
 generate-summary:
   name: 📊 Generate Summary Report
   runs-on: ubuntu-latest
-  needs: [validate-user-story, plan-implementation, implement-story, write-tests, verify-acceptance-criteria]
+  needs:
+    [
+      validate-user-story,
+      plan-implementation,
+      implement-story,
+      write-tests,
+      verify-acceptance-criteria,
+    ]
   if: always()
   steps:
     - name: Generate Summary
@@ -353,6 +364,7 @@ Tracke diese Metriken für Workflow-Optimierung:
 ### Problem: Branch Push schlägt fehl mit 403
 
 **Lösung:**
+
 1. Prüfe Branch-Name (muss mit `claude/` beginnen)
 2. Verwende git-push-with-retry.sh
 3. Prüfe Repository Permissions
@@ -360,6 +372,7 @@ Tracke diese Metriken für Workflow-Optimierung:
 ### Problem: Workflow timeout
 
 **Lösung:**
+
 1. Erhöhe timeout-minutes
 2. Optimiere mit Caching
 3. Nutze parallel jobs
@@ -367,6 +380,7 @@ Tracke diese Metriken für Workflow-Optimierung:
 ### Problem: API Rate Limits
 
 **Lösung:**
+
 1. Implementiere Rate-Limit-Detection
 2. Füge delays zwischen API-Calls hinzu
 3. Nutze conditional API calls
