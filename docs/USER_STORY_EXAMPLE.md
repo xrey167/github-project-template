@@ -5,16 +5,19 @@ Dieses Dokument zeigt ein vollständiges Beispiel einer gut geschriebenen User S
 ## Gutes Beispiel
 
 ### Titel
+
 ```
 [Story]: Als eingeloggter Benutzer möchte ich mein Passwort ändern können, damit ich meine Kontosicherheit verwalten kann
 ```
 
 ### Epic/Feature
+
 ```
 Benutzer-Authentifizierung und Sicherheit
 ```
 
 ### User Story
+
 ```
 Als eingeloggter Benutzer
 möchte ich mein Passwort ändern können
@@ -22,6 +25,7 @@ damit ich meine Kontosicherheit verwalten kann und mein Konto schützen kann, we
 ```
 
 ### Akzeptanzkriterien
+
 ```markdown
 - [ ] Benutzer kann im Profil-Menü auf "Passwort ändern" klicken
 - [ ] Ein Modal/Formular öffnet sich mit drei Feldern: "Aktuelles Passwort", "Neues Passwort", "Neues Passwort bestätigen"
@@ -35,22 +39,26 @@ damit ich meine Kontosicherheit verwalten kann und mein Konto schützen kann, we
 ```
 
 ### Story Points
+
 ```
 5 (Mittlerer Aufwand - ca. 1-2 Tage)
 ```
 
 ### Priorität
+
 ```
 Must Have
 ```
 
 ### Abhängigkeiten
+
 ```
 #42 (Benutzer-Authentifizierung muss implementiert sein)
 #56 (Email-Service muss konfiguriert sein)
 ```
 
 ### Definition of Done
+
 ```markdown
 - [ ] Code Review von mindestens 2 Entwicklern
 - [ ] Unit Tests mit mindestens 80% Coverage
@@ -62,24 +70,29 @@ Must Have
 ```
 
 ### Technische Notizen
+
 ```markdown
 **API Endpunkt:**
+
 - POST /api/user/change-password
 - Request Body: { currentPassword: string, newPassword: string }
 - Response: { success: boolean, message: string }
 
 **Betroffene Komponenten:**
+
 - Frontend: ProfileMenu.tsx, ChangePasswordModal.tsx
 - Backend: UserService.ts, PasswordService.ts, EmailService.ts
 - Validation: PasswordValidator.ts
 
 **Sicherheitsaspekte:**
+
 - Passwort muss mit bcrypt gehashed werden (Salt rounds: 12)
 - Rate Limiting: Max 5 Versuche pro 15 Minuten
 - Aktuelles Passwort muss verifiziert werden bevor Änderung
 - Session invalidation bei Passwortänderung (außer aktuelle Session)
 
 **UI/UX Überlegungen:**
+
 - Passwort-Stärke-Anzeige (schwach/mittel/stark)
 - "Passwort anzeigen" Toggle für alle Felder
 - Klare Validierungs-Hinweise in Echtzeit
@@ -91,16 +104,19 @@ Must Have
 ## Schlechtes Beispiel (NICHT SO!)
 
 ### Titel ❌
+
 ```
 [Story]: Passwort Sachen
 ```
 
 ### User Story ❌
+
 ```
 Als Benutzer möchte ich Passwort ändern können
 ```
 
 ### Akzeptanzkriterien ❌
+
 ```markdown
 - [ ] Passwort ändern funktioniert
 - [ ] Es sieht gut aus
@@ -120,6 +136,7 @@ Als Benutzer möchte ich Passwort ändern können
 ### INVEST-Prinzip
 
 Eine gute User Story ist:
+
 - **I**ndependent (Unabhängig)
 - **N**egotiable (Verhandelbar)
 - **V**aluable (Wertvoll)
@@ -130,6 +147,7 @@ Eine gute User Story ist:
 ### Format
 
 Nutze immer das Format:
+
 ```
 Als [Rolle]
 möchte ich [Ziel]
@@ -139,6 +157,7 @@ damit [Nutzen/Business Value]
 ### Akzeptanzkriterien
 
 Gute Akzeptanzkriterien sind:
+
 - ✅ Spezifisch und konkret
 - ✅ Testbar und messbar
 - ✅ Aus Nutzersicht geschrieben
@@ -165,11 +184,13 @@ Gute Akzeptanzkriterien sind:
 ### Häufige Fehler vermeiden
 
 ❌ **Zu vage:**
+
 ```
 - [ ] System funktioniert gut
 ```
 
 ✅ **Spezifisch:**
+
 ```
 - [ ] System verarbeitet 1000 Anfragen pro Sekunde ohne Performance-Degradation
 ```
@@ -177,11 +198,13 @@ Gute Akzeptanzkriterien sind:
 ---
 
 ❌ **Technische Details statt User Value:**
+
 ```
 Als Entwickler möchte ich Redis cachen implementieren
 ```
 
 ✅ **User Value fokussiert:**
+
 ```
 Als Benutzer möchte ich, dass die Produktsuche in unter 1 Sekunde lädt, damit ich schneller einkaufen kann
 ```
@@ -189,11 +212,13 @@ Als Benutzer möchte ich, dass die Produktsuche in unter 1 Sekunde lädt, damit 
 ---
 
 ❌ **Zu groß und nicht aufteilbar:**
+
 ```
 Als Benutzer möchte ich ein komplett neues Dashboard mit allen Features
 ```
 
 ✅ **Aufgeteilt in kleinere Stories:**
+
 ```
 Story 1: Als Benutzer möchte ich meine letzten 5 Aktivitäten im Dashboard sehen
 Story 2: Als Benutzer möchte ich meine Statistiken als Chart im Dashboard sehen
@@ -221,6 +246,7 @@ Bevor du eine User Story erstellst, prüfe:
 ## Templates für verschiedene Story-Typen
 
 ### Frontend Feature
+
 ```
 Als [Benutzerrolle]
 möchte ich [UI-Element/Feature] sehen/nutzen
@@ -234,6 +260,7 @@ Akzeptanzkriterien:
 ```
 
 ### Backend Feature / API
+
 ```
 Als [System/Service/App]
 möchte ich [Daten abrufen/verarbeiten/speichern]
@@ -248,6 +275,7 @@ Akzeptanzkriterien:
 ```
 
 ### Bug Fix
+
 ```
 Als [Benutzerrolle]
 möchte ich, dass [Problem] nicht mehr auftritt
@@ -262,6 +290,7 @@ Akzeptanzkriterien:
 ```
 
 ### Performance Improvement
+
 ```
 Als [Benutzerrolle]
 möchte ich, dass [Feature/Seite] schneller lädt
