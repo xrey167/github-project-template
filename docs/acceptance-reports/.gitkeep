@@ -1,0 +1,5 @@
+# Acceptance Reports
+
+This directory contains acceptance criteria reports created by the Factory AI User Story Workflow.
+
+Each report follows the format: `story-{issue-number}-acceptance-report.md`
