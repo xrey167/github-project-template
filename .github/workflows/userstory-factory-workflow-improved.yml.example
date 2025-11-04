@@ -1,0 +1,277 @@
+# 🏭 Factory AI User Story Workflow (Improved Version)
+#
+# Dies ist eine verbesserte Version des Workflows mit:
+# - Git Push/Fetch Retry-Mechanismen
+# - Bessere Fehlerbehandlung
+# - Performance-Optimierungen
+#
+# Um diese Version zu verwenden:
+# 1. Backup der aktuellen userstory-factory-workflow.yml
+# 2. Ersetze die relevanten Steps mit den unten gezeigten Beispielen
+
+name: 🏭 Factory AI User Story Workflow (Improved)
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  # ===== EXAMPLE: Verbesserter Planning Job =====
+  plan-implementation-improved:
+    name: 📋 Plan Implementation (Improved)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # Timeout hinzugefügt
+    needs: validate-user-story
+    if: ${{ needs.validate-user-story.outputs.is_valid == 'true' }}
+    outputs:
+      branch_name: ${{ steps.create_branch.outputs.branch_name }}
+      plan_created: ${{ steps.plan.outputs.plan_created }}
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔄 Fetch latest changes with retry
+        run: .github/scripts/git-fetch-with-retry.sh
+        continue-on-error: true
+
+      - name: 🌿 Create feature branch with sanitized name
+        id: create_branch
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # Sanitize title for branch name
+          SANITIZED_TITLE=$(echo "${ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | cut -c1-30)
+          BRANCH_NAME="claude/github-userstory-factory-workflow-${ISSUE_NUMBER}-${SANITIZED_TITLE}-${{ github.event.issue.node_id }}"
+
+          git config --global user.name "factory-ai-bot"
+          git config --global user.email "factory-ai-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: 📋 Create Implementation Plan
+        id: plan
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            Issue Body:
+            ${{ github.event.issue.body }}
+
+            WICHTIG: Du bist jetzt im Planungsmodus. Erstelle einen detaillierten Implementierungsplan für diese User Story:
+
+            1. Analysiere die User Story und die Akzeptanzkriterien
+            2. Identifiziere alle betroffenen Dateien und Komponenten
+            3. Erstelle eine Schritt-für-Schritt Implementierungsstrategie
+            4. Definiere welche Tests geschrieben werden müssen
+            5. Erstelle eine Checkliste für die Akzeptanzkriterien
+
+            Schreibe den Plan in eine neue Datei: docs/implementation-plans/story-${{ github.event.issue.number }}-plan.md
+
+            Commitme den Plan mit der Message: "plan: add implementation plan for user story #${{ github.event.issue.number }}"
+
+      # ===== IMPROVED: Git Push mit Retry =====
+      - name: 📤 Push planning branch with retry
+        if: success()
+        run: .github/scripts/git-push-with-retry.sh "${{ steps.create_branch.outputs.branch_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💬 Comment on Issue - Plan Created
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🏭 **Factory AI Workflow gestartet**\n\n✅ Planungsphase abgeschlossen\n🌿 Branch erstellt: \`${{ steps.create_branch.outputs.branch_name }}\`\n\n➡️ Als nächstes: Implementierung`
+            });
+
+      # ===== NEW: Error Handling =====
+      - name: 💬 Comment on Issue - Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Planungsphase**\n\n` +
+                    `Der Workflow ist in der Planungsphase fehlgeschlagen.\n\n` +
+                    `**Fehlerdetails:**\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `**Nächste Schritte:**\n` +
+                    `1. Überprüfe die Logs im Workflow-Run\n` +
+                    `2. Stelle sicher, dass ANTHROPIC_API_KEY korrekt gesetzt ist\n` +
+                    `3. Füge das Label \`retry-factory-workflow\` hinzu um erneut zu starten`
+            });
+
+  # ===== EXAMPLE: Verbesserter Implementation Job =====
+  implement-story-improved:
+    name: 🔨 Implement User Story (Improved)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Längerer Timeout für Implementierung
+    needs: [validate-user-story, plan-implementation-improved]
+    if: ${{ needs.plan-implementation-improved.outputs.branch_name != '' }}
+    steps:
+      - name: ⬇️ Checkout code on feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan-implementation-improved.outputs.branch_name }}
+          fetch-depth: 0
+
+      # ===== NEW: Caching =====
+      - name: 📦 Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔨 Implement User Story
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            Issue Body:
+            ${{ github.event.issue.body }}
+
+            WICHTIG: Implementiere jetzt die User Story basierend auf dem Plan in docs/implementation-plans/story-${{ github.event.issue.number }}-plan.md
+
+            Folge diesen Schritten:
+            1. Lies den Implementierungsplan
+            2. Implementiere alle notwendigen Änderungen im Code
+            3. Stelle sicher, dass der Code den Akzeptanzkriterien entspricht
+            4. Folge den Best Practices und Code-Standards des Projekts
+            5. Füge JSDoc/TypeDoc Kommentare hinzu wo sinnvoll
+
+            Commitme die Implementierung mit der Message: "feat: implement user story #${{ github.event.issue.number }}"
+
+      # ===== IMPROVED: Git Push mit Retry =====
+      - name: 📤 Push implementation with retry
+        if: success()
+        run: .github/scripts/git-push-with-retry.sh "${{ needs.plan-implementation-improved.outputs.branch_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💬 Comment on Issue - Implementation Done
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Implementierungsphase abgeschlossen\n\n➡️ Als nächstes: Tests schreiben`
+            });
+
+      - name: 💬 Comment on Issue - Error
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Fehler in der Implementierungsphase**\n\n` +
+                    `🔗 [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                    `Bitte überprüfe die Logs für Details.`
+            });
+
+  # ===== EXAMPLE: Summary Report =====
+  generate-summary:
+    name: 📊 Generate Summary Report
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, plan-implementation-improved, implement-story-improved]
+    if: always()
+    steps:
+      - name: 📊 Create Workflow Summary
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const summary = `
+            ## 🏭 Factory AI Workflow Summary
+
+            **User Story:** #${{ github.event.issue.number }}
+
+            | Phase | Status |
+            |-------|--------|
+            | ✅ Validation | ${{ needs.validate-user-story.result }} |
+            | 📋 Planning | ${{ needs.plan-implementation-improved.result }} |
+            | 🔨 Implementation | ${{ needs.implement-story-improved.result }} |
+
+            **Branch:** \`${{ needs.plan-implementation-improved.outputs.branch_name }}\`
+
+            **Workflow Run:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            `;
+
+            core.summary.addRaw(summary).write();
+
+            // Comment summary on issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });
+
+# ===== Integration Instructions =====
+#
+# So integrierst du diese Verbesserungen in den aktuellen Workflow:
+#
+# 1. Git Push mit Retry:
+#    Ersetze alle `git push -u origin $BRANCH_NAME` mit:
+#    `.github/scripts/git-push-with-retry.sh "$BRANCH_NAME"`
+#
+# 2. Git Fetch mit Retry:
+#    Füge vor Branch-Operationen hinzu:
+#    `.github/scripts/git-fetch-with-retry.sh`
+#
+# 3. Error Handling:
+#    Füge nach jedem kritischen Step hinzu:
+#    - name: Comment on Issue - Error
+#      if: failure()
+#      uses: actions/github-script@v6
+#      [siehe Beispiel oben]
+#
+# 4. Timeouts:
+#    Füge zu jedem Job hinzu:
+#    timeout-minutes: 15
+#
+# 5. Caching:
+#    Füge vor npm ci hinzu:
+#    [siehe Cache Step oben]

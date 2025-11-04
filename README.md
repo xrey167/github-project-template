@@ -62,7 +62,9 @@ Dieses Template enthält einen vollautomatischen Workflow zur Umsetzung von User
 3. Stelle sicher, dass das Label `user-story` gesetzt ist
 4. Der Workflow startet automatisch und erstellt einen PR mit der vollständigen Implementierung
 
-**📚 Vollständige Dokumentation:** [`docs/FACTORY_AI_WORKFLOW.md`](./docs/FACTORY_AI_WORKFLOW.md)
+**📚 Vollständige Dokumentation:**
+- [`docs/FACTORY_AI_WORKFLOW.md`](./docs/FACTORY_AI_WORKFLOW.md) - Nutzungsanleitung
+- [`docs/WORKFLOW_IMPROVEMENTS.md`](./docs/WORKFLOW_IMPROVEMENTS.md) - Verbesserungen & Best Practices
 
 ## 🔐 Benötigte Secrets
 
