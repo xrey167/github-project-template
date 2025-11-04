@@ -9,10 +9,12 @@ Der Factory AI User Story Workflow automatisiert die komplette Umsetzung von Use
 Wenn eine User Story in GitHub erstellt wird, durchläuft sie automatisch folgende Phasen:
 
 ### 1. ✅ Validierung
+
 - Prüft ob das Issue das Label `user-story` hat
 - Extrahiert alle relevanten Informationen aus dem Issue
 
 ### 2. 📋 Planung
+
 - Analysiert die User Story und Akzeptanzkriterien
 - Identifiziert betroffene Dateien und Komponenten
 - Erstellt einen detaillierten Implementierungsplan
@@ -20,24 +22,28 @@ Wenn eine User Story in GitHub erstellt wird, durchläuft sie automatisch folgen
 - Erstellt einen Feature-Branch im Format `claude/github-userstory-factory-workflow-{node-id}`
 
 ### 3. 🔨 Implementierung
+
 - Implementiert die User Story gemäß dem Implementierungsplan
 - Folgt den Best Practices und Code-Standards des Projekts
 - Fügt Dokumentation und Kommentare hinzu
 - Committed die Änderungen mit aussagekräftiger Commit-Message
 
 ### 4. 🧪 Test-Entwicklung
+
 - Schreibt umfassende Unit Tests
 - Erstellt Integration Tests wenn nötig
 - Führt alle Tests aus und stellt sicher, dass sie durchlaufen
 - Strebt hohe Code Coverage an (mindestens 80%)
 
 ### 5. ✅ Akzeptanzkriterien-Prüfung
+
 - Überprüft jedes Akzeptanzkriterium
 - Erstellt einen detaillierten Akzeptanzreport
 - Speichert den Report in `docs/acceptance-reports/story-{number}-acceptance-report.md`
 - Führt finale Tests aus (Lint, Unit, Integration, Build)
 
 ### 6. 🔀 Pull Request Erstellung
+
 - Erstellt automatisch einen Pull Request
 - Verlinkt den PR mit dem ursprünglichen Issue
 - Fügt alle relevanten Labels hinzu
@@ -48,6 +54,7 @@ Wenn eine User Story in GitHub erstellt wird, durchläuft sie automatisch folgen
 ### Voraussetzungen
 
 1. **GitHub Repository Secrets einrichten:**
+
    ```
    ANTHROPIC_API_KEY - API Key für Claude AI
    GITHUB_TOKEN - Wird automatisch von GitHub bereitgestellt
@@ -66,6 +73,7 @@ Wenn eine User Story in GitHub erstellt wird, durchläuft sie automatisch folgen
 ### Workflow starten
 
 1. **Issue erstellen:**
+
    ```
    - Gehe zu GitHub Issues
    - Klicke auf "New Issue"
@@ -125,25 +133,31 @@ docs/
 # Implementierungsplan: User Story #123
 
 ## User Story
+
 [User Story Text]
 
 ## Akzeptanzkriterien
+
 [Liste der Kriterien]
 
 ## Betroffene Dateien
+
 - file1.ts
 - file2.ts
 
 ## Implementierungsschritte
+
 1. Schritt 1
 2. Schritt 2
-...
+   ...
 
 ## Zu erstellende Tests
+
 - Test 1
 - Test 2
 
 ## Akzeptanzkriterien Checkliste
+
 - [ ] Kriterium 1
 - [ ] Kriterium 2
 ```
@@ -154,23 +168,28 @@ docs/
 # Akzeptanzkriterien Report: User Story #123
 
 ## User Story
+
 [User Story Text]
 
 ## Akzeptanzkriterien Status
 
 ### Kriterium 1
+
 - ✅ Status: Erfüllt
 - Beschreibung: [Wie wurde es erfüllt]
 - Beweis: [Code-Referenz oder Test]
 
 ### Kriterium 2
+
 ...
 
 ## Zusammenfassung
+
 - Erfüllte Kriterien: X/Y
 - Status: ✅ Bereit für Review
 
 ## Nächste Schritte
+
 [Was muss noch getan werden]
 ```
 
@@ -182,7 +201,7 @@ Der Workflow kann in `.github/workflows/userstory-factory-workflow.yml` angepass
 
 ```yaml
 env:
-  NODE_VERSION: "18"  # Node.js Version ändern
+  NODE_VERSION: "18" # Node.js Version ändern
 ```
 
 ### Claude AI Task anpassen
@@ -199,12 +218,14 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 ### Gute User Stories schreiben
 
 1. **Klar und spezifisch:**
+
    ```
    ✅ Als Benutzer möchte ich mein Passwort ändern können, damit ich meine Kontosicherheit verwalten kann
    ❌ Als Benutzer möchte ich Sachen machen
    ```
 
 2. **Konkrete Akzeptanzkriterien:**
+
    ```
    ✅
    - [ ] Benutzer kann auf "Passwort ändern" Button klicken
@@ -244,6 +265,7 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 **Problem:** Der Workflow wird nicht getriggert
 
 **Lösungen:**
+
 - Stelle sicher, dass das Label `user-story` gesetzt ist
 - Prüfe ob der Workflow aktiviert ist unter "Actions"
 - Überprüfe die Repository-Permissions
@@ -253,6 +275,7 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 **Problem:** `ANTHROPIC_API_KEY` fehlt oder ist ungültig
 
 **Lösungen:**
+
 - Prüfe ob das Secret korrekt in den Repository-Settings gesetzt ist
 - Stelle sicher, dass der API Key gültig ist
 - Überprüfe die API Key Quota bei Anthropic
@@ -262,6 +285,7 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 **Problem:** Git push schlägt mit 403 Fehler fehl
 
 **Lösungen:**
+
 - Der Branch-Name muss mit `claude/` beginnen und mit der Session-ID enden
 - Stelle sicher, dass die Permissions korrekt sind
 - Prüfe ob Branch Protection Rules den Push blockieren
@@ -271,6 +295,7 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 **Problem:** Tests durchlaufen nicht erfolgreich
 
 **Lösungen:**
+
 - Prüfe die Test-Logs für Details
 - Führe die Tests lokal aus: `npm run test:unit`
 - Stelle sicher, dass alle Dependencies installiert sind
@@ -281,6 +306,7 @@ Jede Phase des Workflows nutzt eine spezifische Task-Beschreibung für Claude AI
 **Problem:** PR-Erstellung schlägt fehl
 
 **Lösungen:**
+
 - Stelle sicher, dass Commits auf dem Branch existieren
 - Prüfe ob ein PR mit dem gleichen Branch bereits existiert
 - Überprüfe die Branch-Namen-Konventionen
@@ -313,6 +339,7 @@ Deployment
 ### Automatische Labels
 
 Der Workflow fügt automatisch folgende Labels zum PR hinzu:
+
 - `user-story` - Kennzeichnet als User Story Implementation
 - `automated` - Kennzeichnet als automatisch erstellt
 - `factory-ai` - Kennzeichnet als Factory AI generiert
@@ -329,11 +356,13 @@ Der Workflow fügt automatisch folgende Labels zum PR hinzu:
 ### GitHub Actions Logs
 
 Alle Workflow-Runs werden unter "Actions" gespeichert:
+
 ```
 Repository → Actions → Factory AI User Story Workflow
 ```
 
 Hier kannst du:
+
 - Logs jedes Jobs einsehen
 - Fehler debuggen
 - Performance analysieren
@@ -352,6 +381,7 @@ möchte ich mein Passwort zurücksetzen können
 damit ich wieder Zugriff auf mein Konto erhalte, wenn ich es vergessen habe
 
 **Akzeptanzkriterien:**
+
 - [ ] Benutzer kann auf "Passwort vergessen?" Link klicken
 - [ ] Email-Feld wird angezeigt zur Eingabe der registrierten Email
 - [ ] System sendet Reset-Link an die angegebene Email
@@ -380,12 +410,14 @@ damit ich wieder Zugriff auf mein Konto erhalte, wenn ich es vergessen habe
 ### 3. Generierte Dateien
 
 **`docs/implementation-plans/story-15-plan.md`**
+
 - Detaillierter Plan für Password-Reset Feature
 - Betroffene Dateien: auth.service.ts, email.service.ts, etc.
 - API-Endpunkte: POST /api/auth/forgot-password
 - Komponenten: ForgotPasswordForm, ResetPasswordForm
 
 **`docs/acceptance-reports/story-15-acceptance-report.md`**
+
 - Alle 7 Akzeptanzkriterien erfüllt ✅
 - Test Coverage: 85%
 - Status: Bereit für Review
@@ -393,6 +425,7 @@ damit ich wieder Zugriff auf mein Konto erhalte, wenn ich es vergessen habe
 ### 4. Pull Request Review
 
 **PR #42: feat: implement password reset functionality**
+
 - 12 geänderte Dateien
 - +450 Zeilen Code
 - +320 Zeilen Tests
