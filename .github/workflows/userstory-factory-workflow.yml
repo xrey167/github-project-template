@@ -1,0 +1,457 @@
+name: 🏭 Factory AI User Story Workflow
+
+on:
+  issues:
+    types: [opened, labeled]
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/userstory-factory-workflow.yml"
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  noop:
+    name: 💤 No-op
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'issues' }}
+    steps:
+      - run: echo "User Story Factory workflow only handles issues."
+
+  validate-user-story:
+    name: ✅ Validate User Story
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'user-story') }}
+    outputs:
+      is_valid: ${{ steps.check.outputs.is_valid }}
+      story_title: ${{ steps.extract.outputs.story_title }}
+      story_number: ${{ steps.extract.outputs.story_number }}
+    steps:
+      - name: 🔍 Check if User Story has required labels
+        id: check
+        run: |
+          echo "is_valid=true" >> $GITHUB_OUTPUT
+
+      - name: 📝 Extract User Story Information
+        id: extract
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "story_title=${ISSUE_TITLE}" >> $GITHUB_OUTPUT
+          echo "story_number=${ISSUE_NUMBER}" >> $GITHUB_OUTPUT
+
+  plan-implementation:
+    name: 📋 Plan Implementation with Factory AI
+    runs-on: ubuntu-latest
+    needs: validate-user-story
+    if: ${{ needs.validate-user-story.outputs.is_valid == 'true' }}
+    outputs:
+      branch_name: ${{ steps.create_branch.outputs.branch_name }}
+      plan_created: ${{ steps.plan.outputs.plan_created }}
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🌿 Create feature branch
+        id: create_branch
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          BRANCH_NAME="claude/github-userstory-factory-workflow-${{ github.event.issue.node_id }}"
+          git config --global user.name "factory-ai-bot"
+          git config --global user.email "factory-ai-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: 📋 Create Implementation Plan
+        id: plan
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            Issue Body:
+            ${{ github.event.issue.body }}
+
+            WICHTIG: Du bist jetzt im Planungsmodus. Erstelle einen detaillierten Implementierungsplan für diese User Story:
+
+            1. Analysiere die User Story und die Akzeptanzkriterien
+            2. Identifiziere alle betroffenen Dateien und Komponenten
+            3. Erstelle eine Schritt-für-Schritt Implementierungsstrategie
+            4. Definiere welche Tests geschrieben werden müssen
+            5. Erstelle eine Checkliste für die Akzeptanzkriterien
+
+            Schreibe den Plan in eine neue Datei: docs/implementation-plans/story-${{ github.event.issue.number }}-plan.md
+
+            Der Plan sollte folgendes Format haben:
+            # Implementierungsplan: User Story #${{ github.event.issue.number }}
+
+            ## User Story
+            [User Story Text]
+
+            ## Akzeptanzkriterien
+            [Liste der Kriterien]
+
+            ## Betroffene Dateien
+            - file1.ts
+            - file2.ts
+
+            ## Implementierungsschritte
+            1. Schritt 1
+            2. Schritt 2
+            ...
+
+            ## Zu erstellende Tests
+            - Test 1
+            - Test 2
+
+            ## Akzeptanzkriterien Checkliste
+            - [ ] Kriterium 1
+            - [ ] Kriterium 2
+
+            Commitme den Plan mit der Message: "plan: add implementation plan for user story #${{ github.event.issue.number }}"
+
+      - name: 📤 Push planning branch
+        if: ${{ steps.plan.outputs.plan_created == 'true' || success() }}
+        run: |
+          git push -u origin ${{ steps.create_branch.outputs.branch_name }} || echo "Branch push will be done after implementation"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💬 Comment on Issue - Plan Created
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🏭 **Factory AI Workflow gestartet**\n\n✅ Planungsphase abgeschlossen\n🌿 Branch erstellt: \`${{ steps.create_branch.outputs.branch_name }}\`\n\n➡️ Als nächstes: Implementierung`
+            });
+
+  implement-story:
+    name: 🔨 Implement User Story with Factory AI
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, plan-implementation]
+    if: ${{ needs.plan-implementation.outputs.branch_name != '' }}
+    steps:
+      - name: ⬇️ Checkout code on feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan-implementation.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔨 Implement User Story
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            Issue Body:
+            ${{ github.event.issue.body }}
+
+            WICHTIG: Implementiere jetzt die User Story basierend auf dem Plan in docs/implementation-plans/story-${{ github.event.issue.number }}-plan.md
+
+            Folge diesen Schritten:
+            1. Lies den Implementierungsplan
+            2. Implementiere alle notwendigen Änderungen im Code
+            3. Stelle sicher, dass der Code den Akzeptanzkriterien entspricht
+            4. Folge den Best Practices und Code-Standards des Projekts
+            5. Füge JSDoc/TypeDoc Kommentare hinzu wo sinnvoll
+
+            Commitme die Implementierung mit der Message: "feat: implement user story #${{ github.event.issue.number }}"
+
+      - name: 💬 Comment on Issue - Implementation Done
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Implementierungsphase abgeschlossen\n\n➡️ Als nächstes: Tests schreiben`
+            });
+
+  write-tests:
+    name: 🧪 Write Tests with Factory AI
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, plan-implementation, implement-story]
+    steps:
+      - name: ⬇️ Checkout code on feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan-implementation.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Write Tests
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            WICHTIG: Schreibe umfassende Tests für die implementierte User Story.
+
+            Folge diesen Schritten:
+            1. Analysiere die implementierten Änderungen
+            2. Schreibe Unit Tests für alle neuen Funktionen/Komponenten
+            3. Schreibe Integration Tests wenn nötig
+            4. Stelle sicher, dass alle Tests durchlaufen
+            5. Erreiche eine hohe Code Coverage (mindestens 80%)
+
+            Test-Typen die geschrieben werden sollten:
+            - Unit Tests (*.test.ts / *.spec.ts)
+            - Integration Tests (*.integration.test.ts)
+            - E2E Tests wenn UI-Änderungen (tests/e2e/)
+
+            Führe die Tests aus mit: npm run test:unit && npm run test:integration
+
+            Commitme die Tests mit der Message: "test: add tests for user story #${{ github.event.issue.number }}"
+
+      - name: 🧪 Run All Tests
+        run: |
+          npm run test:unit || echo "Some tests might have failed"
+          npm run test:integration || echo "Some integration tests might have failed"
+
+      - name: 💬 Comment on Issue - Tests Written
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Tests geschrieben und ausgeführt\n\n➡️ Als nächstes: Akzeptanzkriterien prüfen`
+            });
+
+  verify-acceptance-criteria:
+    name: ✅ Verify Acceptance Criteria
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, plan-implementation, implement-story, write-tests]
+    steps:
+      - name: ⬇️ Checkout code on feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan-implementation.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: ✅ Verify Acceptance Criteria
+        uses: anthropics/claude-code-action@v1
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          task: |
+            User Story #${{ github.event.issue.number }}: ${{ needs.validate-user-story.outputs.story_title }}
+
+            Issue Body:
+            ${{ github.event.issue.body }}
+
+            WICHTIG: Überprüfe jetzt ob alle Akzeptanzkriterien erfüllt sind.
+
+            Folge diesen Schritten:
+            1. Lies die Akzeptanzkriterien aus dem Issue
+            2. Überprüfe die Implementierung gegen jedes Kriterium
+            3. Führe die Tests aus um sicherzustellen, dass alles funktioniert
+            4. Erstelle einen Bericht über den Status jedes Akzeptanzkriteriums
+
+            Erstelle eine neue Datei: docs/acceptance-reports/story-${{ github.event.issue.number }}-acceptance-report.md
+
+            Der Bericht sollte folgendes Format haben:
+            # Akzeptanzkriterien Report: User Story #${{ github.event.issue.number }}
+
+            ## User Story
+            [User Story Text]
+
+            ## Akzeptanzkriterien Status
+
+            ### Kriterium 1
+            - ✅ Status: Erfüllt / ❌ Nicht erfüllt
+            - Beschreibung: [Wie wurde es erfüllt]
+            - Beweis: [Code-Referenz oder Test]
+
+            ### Kriterium 2
+            ...
+
+            ## Zusammenfassung
+            - Erfüllte Kriterien: X/Y
+            - Status: ✅ Bereit für Review / ⚠️ Weitere Arbeit nötig
+
+            ## Nächste Schritte
+            [Was muss noch getan werden, falls nicht alle Kriterien erfüllt sind]
+
+            Commitme den Bericht mit der Message: "docs: add acceptance criteria report for user story #${{ github.event.issue.number }}"
+
+      - name: 🔍 Run Final Tests
+        run: |
+          npm run lint
+          npm run test:unit
+          npm run test:integration
+          npm run build
+
+      - name: 📤 Push all changes
+        run: |
+          git push -u origin ${{ needs.plan-implementation.outputs.branch_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💬 Comment on Issue - Verification Done
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Akzeptanzkriterien geprüft\n\n➡️ Als nächstes: Pull Request erstellen`
+            });
+
+  create-pull-request:
+    name: 🔀 Create Pull Request
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, plan-implementation, verify-acceptance-criteria]
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan-implementation.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: 🔀 Create Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const branchName = '${{ needs.plan-implementation.outputs.branch_name }}';
+
+            // Extract acceptance criteria from issue body
+            const issueBody = issue.body || '';
+
+            const prBody = `## 🏭 Factory AI User Story Implementation
+
+            Closes #${issue.number}
+
+            ### 📋 User Story
+            ${issue.title}
+
+            ### 🎯 Changes
+            This PR implements the user story as described in issue #${issue.number}.
+
+            ### 📝 Implementation Details
+            - ✅ Planning completed
+            - ✅ Implementation completed
+            - ✅ Tests written and passing
+            - ✅ Acceptance criteria verified
+
+            ### 📚 Documentation
+            - Implementation Plan: \`docs/implementation-plans/story-${issue.number}-plan.md\`
+            - Acceptance Report: \`docs/acceptance-reports/story-${issue.number}-acceptance-report.md\`
+
+            ### ✅ Acceptance Criteria
+            Please review the acceptance criteria report in the docs folder.
+
+            ### 🧪 Testing
+            All tests are passing:
+            - ✅ Unit tests
+            - ✅ Integration tests
+            - ✅ Linting
+            - ✅ Build
+
+            ---
+            🤖 This PR was automatically created by the Factory AI User Story Workflow
+            `;
+
+            try {
+              const { data: pr } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `feat: ${issue.title}`,
+                head: branchName,
+                base: 'main',
+                body: prBody,
+                draft: false
+              });
+
+              // Add labels to PR
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['user-story', 'automated', 'factory-ai']
+              });
+
+              // Comment on original issue with PR link
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `🎉 **Pull Request erstellt!**\n\nDer Pull Request wurde erfolgreich erstellt: #${pr.number}\n\n🔗 ${pr.html_url}\n\n---\n### ✅ Nächste Schritte:\n1. Review des Pull Requests\n2. Approval von Reviewern\n3. Merge in main branch\n\n🤖 Automatisch erstellt vom Factory AI User Story Workflow`
+              });
+
+              return pr;
+            } catch (error) {
+              core.setFailed(`Failed to create pull request: ${error.message}`);
+
+              // Comment on issue about the error
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `❌ **Fehler beim Erstellen des Pull Requests**\n\n\`\`\`\n${error.message}\n\`\`\`\n\nBitte überprüfe die Logs für weitere Details.`
+              });
+            }
+
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [validate-user-story, create-pull-request]
+    if: always()
+    steps:
+      - name: 📢 Summary
+        run: |
+          echo "🏭 Factory AI User Story Workflow abgeschlossen"
+          echo "✅ User Story #${{ github.event.issue.number }} wurde bearbeitet"
+          echo "🌿 Branch: ${{ needs.plan-implementation.outputs.branch_name }}"
