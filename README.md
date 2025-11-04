@@ -68,11 +68,11 @@ Dieses Template enthält einen vollautomatischen Workflow zur Umsetzung von User
 
 ## 🔐 Benötigte Secrets
 
-| Secret              | Beschreibung                                                  | Erforderlich für |
-| ------------------- | ------------------------------------------------------------- | ---------------- |
-| `FACTORY_API_KEY`   | API Key für `Factory-AI/droid-code-review@v1`                 | AI Code Review |
+| Secret              | Beschreibung                                                           | Erforderlich für                                   |
+| ------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `FACTORY_API_KEY`   | API Key für `Factory-AI/droid-code-review@v1`                          | AI Code Review                                     |
 | `ANTHROPIC_API_KEY` | API Key für `anthropics/claude-code-action@v1` und Factory AI Workflow | **Factory AI User Story Workflow**, AI Code Review |
-| `PROJECT_TOKEN`     | Personal Access Token mit Zugriffsrechten auf GitHub Projects | Auto-Assign Workflow |
+| `PROJECT_TOKEN`     | Personal Access Token mit Zugriffsrechten auf GitHub Projects          | Auto-Assign Workflow                               |
 
 **Wichtig:** Der `ANTHROPIC_API_KEY` ist **zwingend erforderlich** für den Factory AI User Story Workflow!
 
