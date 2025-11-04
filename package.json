@@ -86,5 +86,36 @@
   },
   "volta": {
     "node": "18.18.0"
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": false,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "bracketSpacing": true,
+    "proseWrap": "preserve",
+    "overrides": [
+      {
+        "files": [
+          "*.yml",
+          "*.yaml"
+        ],
+        "options": {
+          "printWidth": 120,
+          "proseWrap": "preserve"
+        }
+      },
+      {
+        "files": "*.md",
+        "options": {
+          "printWidth": 80,
+          "proseWrap": "preserve"
+        }
+      }
+    ]
   }
 }
