@@ -11,14 +11,7 @@
   "proseWrap": "preserve",
   "overrides": [
     {
-      "files": "*.yml",
-      "options": {
-        "printWidth": 120,
-        "proseWrap": "preserve"
-      }
-    },
-    {
-      "files": "*.yaml",
+      "files": ["*.yml", "*.yaml"],
       "options": {
         "printWidth": 120,
         "proseWrap": "preserve"
