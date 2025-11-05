@@ -352,8 +352,7 @@ jobs:
     name: ✅ Verify Acceptance Criteria
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs:
-      [validate-user-story, plan-implementation, implement-story, write-tests]
+    needs: [validate-user-story, plan-implementation, implement-story, write-tests]
     steps:
       - name: ⬇️ Checkout code on feature branch
         uses: actions/checkout@v4
@@ -476,8 +475,7 @@ jobs:
     name: 🔀 Create Pull Request
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs:
-      [validate-user-story, plan-implementation, verify-acceptance-criteria]
+    needs: [validate-user-story, plan-implementation, verify-acceptance-criteria]
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
